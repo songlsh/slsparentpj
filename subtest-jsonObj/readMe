@@ -1,0 +1,42 @@
+jsonObject
+
+json主要有三类
+json jsonArray jsonObject
+
+主要的方法有两个
+JSON.toJSONString(obj)  // 将对象转换成Json串，可以用下面的方法：
+
+
+JSON.parseObject(String text, obj.class);
+JSON.parseObject(String text);
+
+//对象是单个元素
+JSON.parseObject(json串，CLAZZ);
+//对象包含多个元素
+JSON.parseArray(json串，CLAZZ)；
+
+JSon 默认是不输出空值的 意思就是如果是null输出的时候默认不进行输出该值（缺省）
+如果要输出null 需要使用SerializerFeature.WriteMapNullValue
+
+                  SerializerFeature                                                                    描述
+
+                  WriteNullListAsEmpty                                               将Collection类型字段的字段空值输出为[]
+
+                  WriteNullStringAsEmpty                                           将字符串类型字段的空值输出为空字符串 ""
+
+                  WriteNullNumberAsZero                                               将数值类型字段的空值输出为0
+
+                  WriteNullBolleanAsFalse                                          将Bollean类型字段的空值输出为false
+
+================================================================================
+List<String> stringList = new ArrayList<>();
+stringList.add("aaa");
+stringList.add("bbb");
+stringList.add("ccc");
+stringList.add("ddd");
+//list-->json
+String jsonString = JSON.toJSONString(stringList);
+//json-->list
+List<String> list =JSON.parseArray(jsonString,String.class);
+=======================================================================================
+
