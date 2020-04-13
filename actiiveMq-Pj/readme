@@ -1,0 +1,6 @@
+之前连接数据库操作
+1、注册驱动 Class.forName
+2、获取连接 Connection
+3、获取预编译对象 prepareStatement ps =  connection.get
+4、处理结果集 ResultSet  = ps.execute()
+5、释放连接
