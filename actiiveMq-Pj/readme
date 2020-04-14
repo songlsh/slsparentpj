@@ -4,3 +4,34 @@
 3、获取预编译对象 prepareStatement ps =  connection.get
 4、处理结果集 ResultSet  = ps.execute()
 5、释放连接
+
+=============================================================
+生产者 消息生产者 创建和发送jms消息的客户端
+消费者  接受和处理消息的客户端
+服务提供者 MQ消息中间件：activeMQ kafka
+消息：{
+    1、消息头  =>
+            常用的几个属性 ：
+                textMessage.setJMSDestination(Destination);  //设置的是目的地 topic/queue
+                textMessage.setJMSDeliveryMode(DeliveryMode.PERSISTENT); //消息持久化 不会丢失
+                textMessage.setJMSPriority(int); //优先级 0-9 04 普通 59 加急
+                textMessage.setJMSMessageID(String); // 唯一的标识符
+                textMessage.setJMSExpiration(long); //设置超时时间
+                ...
+      2、消息体
+                封装了消息的主要内容
+                大概有五种：
+                    TextMessage 字符串 string
+                    MapMessage  Map key string  value java基本类型
+                    BytesMessage  byte[]
+                    StreamMessage 标准的流操作开顺序的填充和读取
+                    ObjectMessage  可序列化的Object对象
+                接收方需要与发送方的消息体类型一致
+      3、消息属性
+                =>            textMessage.setStringProperty(String,string);
+                              textMessage.setDoubleProperty(String,double);
+                              textMessage.setShortProperty(String,short);
+                              ...
+                如果需要消息头以外的值 需要增加消息属性
+                识别/去重/重点标注等非常有用的操作
+      }
