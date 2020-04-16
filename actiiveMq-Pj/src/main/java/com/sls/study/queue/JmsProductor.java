@@ -1,4 +1,4 @@
-package com.sls.study;
+package com.sls.study.queue;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
@@ -32,6 +32,7 @@ public class JmsProductor {
         for (int i = 1; i <= 3; i++) {
             //创建消息
             TextMessage textMessage = session.createTextMessage();
+
 
             textMessage.setText("***生产者生产"+i);
 

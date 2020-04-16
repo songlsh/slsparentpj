@@ -1,4 +1,4 @@
-package com.sls.study;
+package com.sls.study.transtion;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
@@ -7,14 +7,14 @@ import org.slf4j.LoggerFactory;
 import javax.jms.*;
 import java.io.IOException;
 
-public class JmsConsumer {
+public class JmsConsumerTx {
 
-    private  static  final Logger logger = LoggerFactory.getLogger(JmsConsumer.class);
+    private  static  final Logger logger = LoggerFactory.getLogger(JmsConsumerTx.class);
 
     private  static final String ACTIVE_CONN = "tcp://192.168.1.11:61616";
     private  static final String QUEUE_NAME = "tcp://localhost:61616";
     public static void main(String[] args) throws JMSException, IOException {
-        System.out.println("--2");
+        System.out.println("tx");
         // 根据连接工厂创建
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(ACTIVE_CONN);
 
@@ -24,7 +24,13 @@ public class JmsConsumer {
         connection.start();
 
         //获取会话2  事务/签收
-        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        /*
+        *
+        * 签收更偏消费者方    如果是Session.CLIENT_ACKNOWLEDGE 需要在接受到消息以后进行 message.acknowledge();
+        *
+        * */
+        Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
         // 创建目的地
         Queue queue = session.createQueue(QUEUE_NAME);
@@ -52,6 +58,7 @@ public class JmsConsumer {
                 if (null != message && message instanceof TextMessage) {
                     try {
                         logger.info("消费者消费信息： " + ((TextMessage) message).getText());
+                        message.acknowledge();
                     } catch (JMSException e) {
                         e.printStackTrace();
                     }

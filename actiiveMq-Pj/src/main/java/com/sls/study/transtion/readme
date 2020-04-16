@@ -1,0 +1,9 @@
+事务 和  签收
+
+事务 偏向 生产者  事务为true 的时候 需要session.commit
+签收 偏向 消费者  签收为手动签收的时候 接收玩消息需要 手动acknowledge
+
+
+当事务和 签收 同时出现的时候:
+事务 为true 的时候 不管签收是什么 事务优先级高 需要有session.commit
+事务为false的时候(非事务的时候) 签收如果为手动签收必须要有message.acknowledge();
