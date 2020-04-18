@@ -11,7 +11,7 @@
     <modules>
         <module>subtest-jsonObj</module>
         <module>actiiveMq-Pj</module>
+        <module>com-spring-boot-activemq</module>
     </modules>
-
 
 </project>
