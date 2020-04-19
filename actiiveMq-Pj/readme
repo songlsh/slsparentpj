@@ -5,6 +5,16 @@
 4、处理结果集 ResultSet  = ps.execute()
 5、释放连接
 
+现在activemq
+
+1、获取activemqConnectionFactory
+2、获取connection
+3、（非持久化）会先连接开启 connection.start()
+4、获取session 会话 创建主题或者队列
+5、创建生产者/消费者 （持久和非持久不一样）
+6、发送和接收消息
+7、关闭连接
+
 =============================================================
 生产者 消息生产者 创建和发送jms消息的客户端
 消费者  接受和处理消息的客户端
@@ -43,3 +53,87 @@
         签收   acknowledge
 
         持久性 setdelievery
+*************************************************
+conf-》activemq.xml
+ <transportConnectors>  修改对应连接协议
+
+         <transportConnectors>  端口
+             <!-- DOS protection, limit concurrent connections to 1000 and frame size to 100MB -->
+             <transportConnector name="openwire" uri="tcp://0.0.0.0:61616?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+             <transportConnector name="amqp" uri="amqp://0.0.0.0:5672?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+             <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+             <transportConnector name="mqtt" uri="mqtt://0.0.0.0:1883?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+             <transportConnector name="ws" uri="ws://0.0.0.0:61614?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+         </transportConnectors>
+
+*******************************************************************************
+
+持久化到硬盘 数据库
+
+配置 config-》activemq.xml
+
+kahadb
+            <persistenceAdapter>
+                <kahaDB directory="${activemq.data}/kahadb"/>
+            </persistenceAdapter>
+levelDB
+jdbc 的配置
+    <persistenceAdapter>
+      <jdbcPersistenceAdapter dataSource="#my-ds" createTablesOnStartup= "true"/>
+    </persistenceAdapter>
+
+    createTablesOnStartup 默认不写的话为true 每次启动都要重新弄创建 库和表  false 不需要 （一般的情况 第一次为true 然后需要置为false避免再次重新创建干掉之前的数据）
+
+    <!-- avtivemq自带lib  dbcp -->
+    <bean id="mysql-ds" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+      <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+      <property name="url" value="jdbc:mysql://localhost/activemq?relaxAutoCommit=true"/>
+      <property name="username" value="activemq"/>
+      <property name="password" value="activemq"/>
+      <property name="poolPreparedStatements" value="true"/>
+    </bean>  放在 xml的borker标签之外 import标签之前
+
+    默认第一次启动activemq的时候，执行的时候会生成三张表,首先需要创建一个数据库，表是自动生成的activemq_msgs  avtivemq_acks activemq_lock
+
+jdbc + activemq journal
+    <persistenceFactory>
+      <journalPersistenceAdapterFactory journalLogFiles="5" dataDirectory="${basedir}/target" />
+      <!-- To use a different dataSource, use the following syntax : -->
+      <!-- <journalPersistenceAdapterFactory journalLogFiles="5" dataDirectory="${basedir}/activemq-data" dataSource="#mysql-ds"/> -->
+    </persistenceFactory>
+
+ ===============================================================================================
+ 默认情况下 是进行异步投递的 同步投递情况：1）非事务情况，并且发送持久化消息 确保消息发送成功，会造成生产者阻塞 2）指定同步发送
+ 异步投递（在消息发送端 生产者）
+ 情况：许多高性能应用程序旨在承受故障情况下的少量消息丢失。如果您的应用程序是按照这种方式设计的，则即使使用持久性消息，也可以启用异步发送来提高吞吐量。
+ 先设置：1、((ActiveMQConnectionFactory)connectionFactory).setUseAsyncSend(true);
+        2、设置细化生产者对象为 ActiveMQMessageProducer
+        3、 设置一个唯一标识 JMSMessageID  =>textMessage.setJMSMessageID(UUID.randomUUID().toString());
+        4、  启用异步发送  producer.send(textMessage, new AsyncCallback()); 方便后面出现异常能及时定位
+            final String jmsMessageID = textMessage.getJMSMessageID();
+            producer.send(textMessage, new AsyncCallback() {
+                public void onSuccess() {
+                 logger.info("success to send: "+ jmsMessageID);
+                }
+
+                public void onException(JMSException e) {
+                   logger.error("error to send: "+ jmsMessageID);
+                }
+            });
+
+===============================================================================================================
+延时投递  定时投递
+首先： 通过在Xml Configuration中将broker schedulerSupport属性设置为true 可以启用它
+然后 在消息属性设置 ScheduledMessage.
+AMQ_SCHEDULED_DELAY	long	在代理计划将消息传递之前，消息将等待的时间（以毫秒为单位）延时时间
+AMQ_SCHEDULED_PERIOD long	在开始时间之后再等待调度消息之前要等待的时间（以毫秒为单位）每次重复间隔时间
+AMQ_SCHEDULED_REPEAT int	重复安排邮件传递的次数 重复次数  貌似看来从0 开始计数的 0为1次
+AMQ_SCHEDULED_CRON	string	使用Cron条目设置时间表
+
+===========================================================================================================
+消息队列的重复消费  默认情况下使用重复6次 间隔1s
+1、客户消费端 使用transaction 但是使用了rollback
+2、使用了transaction 但是没有commit
+3、使用了手动签收 但是 调用了session.recover();
+
+RedeliveryPolicy queuePolicy = new RedeliveryPolicy();
