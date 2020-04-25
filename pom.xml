@@ -12,6 +12,8 @@
         <module>subtest-jsonObj</module>
         <module>actiiveMq-Pj</module>
         <module>com-spring-boot-activemq</module>
+        <module>juc-study</module>
+        <module>threadPool</module>
     </modules>
 
 </project>

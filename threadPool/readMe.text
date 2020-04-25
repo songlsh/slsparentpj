@@ -1,0 +1,11 @@
+线程池：
+java.util.concurrent
+Interface Executor
+       子接口   | ExecutorService
+                 实现类   Class ThreadPoolExecutor
+                         几个工厂类：
+                                   Executors.newCachedThreadPool() （无限线程池，具有自动线程回收），
+                                   Executors.newFixedThreadPool(int) （固定大小的线程池）
+                                   Executors.newSingleThreadExecutor() （单个后台线程），可以预先配置最常用的使用场景设置。
+                 子接口 | ScheduledExecutorService
+                        实现类+继承ThreadPoolExecutor|  ScheduledThreadPoolExecutor 定时执行
