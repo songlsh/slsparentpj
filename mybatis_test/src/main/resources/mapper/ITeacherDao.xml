@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sls.mybatis.dao.ITeacherDao">
+
+    <!--studentList 分二次查询了-->
+    <resultMap id="teacherMap" type="com.sls.mybatis.bean.Teacher">
+        <result property="course" column="course"/>
+        <result property="sex" column="sex"/>
+        <result property="name" column="t_name"/>
+        <!--一对一关系 使用association-->
+        <association property="classes" javaType="com.sls.mybatis.bean.Classes">
+            <result property="location" column="location"/>
+            <result property="name" column="class_name"/>
+        </association>
+        <!--一对多的关系 使用了懒加载-->
+        <collection property="studentList" ofType="com.sls.mybatis.bean.Student"  select="getbyTeacheId" column="id"/>
+    </resultMap>
+
+    <!--studentList 一次查询展示-->
+    <resultMap id="teacherOneMap" type="com.sls.mybatis.bean.Teacher">
+        <result property="course" column="course"/>
+        <result property="sex" column="sex"/>
+        <result property="name" column="t_name"/>
+        <!--一对一关系 使用association-->
+        <association property="classes" javaType="com.sls.mybatis.bean.Classes">
+            <result property="location" column="location"/>
+            <result property="name" column="class_name"/>
+        </association>
+        <!--一对多的关系 -->
+        <collection property="studentList" ofType="com.sls.mybatis.bean.Student">
+            <result property="id" column="id"/>
+            <result property="name" column="sname"/>
+        </collection>
+
+    </resultMap>
+
+    <resultMap id="studentMap" type="com.sls.mybatis.bean.Student">
+        <result property="id" column="id"/>
+        <result property="name" column="sname"/>
+    </resultMap>
+
+    <!--查询studentList使用的是懒加载方式二级查询-->
+    <select id="getOnbyTwo" resultMap="teacherMap">
+        select t.id, t.sex, t.t_name, c.class_name, t.course, c.location  from teacher t
+        join
+        classes c
+        on t.class_id = c.id
+        where t.id = #{id}
+    </select>
+
+
+    <select id="getbyTeacheId" resultMap="studentMap">
+        select * from student where tid = #{tid};
+    </select>
+
+
+    <!---查询studentList使用一次查询-->
+    <select id="getOnebyOne" resultMap="teacherOneMap">
+        select * from teacher t
+        join
+        classes c
+        on t.class_id = c.id
+        join student s
+        on t.id = s.tid
+        where t.id = #{id}
+    </select>
+
+</mapper>

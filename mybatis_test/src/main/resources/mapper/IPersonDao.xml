@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sls.mybatis.dao.IPersonDao">
+    <resultMap id="getPerson" type="com.sls.mybatis.bean.Person">
+        <id property="id" column="id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="sex" column="sex"/>
+        <result property="race" column="race"/>
+    </resultMap>
+    <update id="updatePerson">
+        update person set nickname = #{nickname}  where id = #{id}
+    </update>
+    <delete id="deletePerson" parameterType="int">
+        delete from  person where  id = #{id}
+    </delete>
+
+<!--    <select id="getAll" resultMap="getPerson">-->
+    <select id="getAll" resultMap="getPerson">
+        select id, nickname from person
+    </select>
+    <!--
+        使用resultType 返回对象的时候 需要保持 对象中的所有字段和数据库中的字段保持一致
+    -->
+    <select id="getOne" resultType="com.sls.mybatis.bean.Person">
+         select id, nickname from person where id = #{id}
+    </select>
+    <select id="getOneByMap" resultType="com.sls.mybatis.bean.Person">
+        select id, nickname from person where id = #{id}
+    </select>
+
+    <select id="getOneByPerson" resultType="com.sls.mybatis.bean.Person">
+         select id, nickname from person where id = #{id}
+    </select>
+
+    <select id="getAllMap" resultType="java.util.Map">
+        select id, nickname from person
+    </select>
+
+    <!--模糊查询(在java中拼接%%)-->
+    <select id="getLike" parameterType="map" resultMap="getPerson">
+         select id, nickname from person where nickname like #{keyword}
+    </select>
+
+    <!--模糊查询(sql中使用concat函数进行拼接)-->
+    <select id="getLikeConcat" resultType="com.sls.mybatis.bean.Person">
+        select id, nickname from person where nickname like concat('%',#{keyword},'%')
+    </select>
+
+    <!--动态查询sql拼接-->  <!--where 标签作用会自动过滤掉第一个拼接的and-->
+    <select id="dynamicSqlGet" parameterType="map" resultMap="getPerson">
+         select id, nickname from person
+        <where>
+            <if test="id != null">
+            and id = #{id}
+            </if>
+            <if test="nickname != null">
+            and nickname like #{nickname}
+            </if>
+            <if test="sex != null">
+            and sex = #{sex}
+            </if>
+            <if test="race != null">
+            and race = #{race}
+            </if>
+        </where>
+    </select>
+
+    <!--
+    dynamicTrimSqlGet
+    trim
+       prefix 前面拼接
+       prefixOverrides xx  如果前面有 xx 就会覆盖去掉xx
+       suffix 后面拼接
+       suffixOverrides xx   如果后面有 xx 就会覆盖去掉xx
+    -->
+    <select id="dynamicTrimSqlGet" parameterType="map" resultMap="getPerson">
+        select id, nickname from person
+        <trim prefix="where" prefixOverrides="and" suffixOverrides="dd">
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="nickname != null">
+                and nickname like #{nickname} dd
+            </if>
+            <if test="sex != null">
+                and sex = #{sex}
+            </if>
+            <if test="race != null">
+                and race = #{race}
+            </if>
+        </trim>
+    </select>
+
+    <!--
+        choose when  otherwise
+    -->
+    <select id="dynamicChooseSqlGet" parameterType="map" resultMap="getPerson">
+        select id, nickname from person
+        <trim prefix="where" prefixOverrides="and">
+            <choose>
+                <when test="id != null">
+                    and id = #{id}
+                </when>
+                <when test="nickname != null">
+                    and nickname like #{nickname}
+                </when>
+                <otherwise>
+                    order by id adc
+                </otherwise>
+            </choose>
+        </trim>
+    </select>
+</mapper>
