@@ -133,7 +133,7 @@ AMQ_SCHEDULED_CRON	string	使用Cron条目设置时间表
 ===========================================================================================================
 消息队列的重复消费  默认情况下使用重复6次 间隔1s
 1、客户消费端 使用transaction 但是使用了rollback
-2、使用了transaction 但是没有commit
-3、使用了手动签收 但是 调用了session.recover();
+2、客户消费端 使用了transaction 但是没有commit
+3、客户消费端 使用了手动签收 但是 调用了session.recover();
 
 RedeliveryPolicy queuePolicy = new RedeliveryPolicy();
